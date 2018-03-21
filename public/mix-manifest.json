@@ -1,0 +1,12 @@
+{
+    "/js/app.js": "/js/app.js",
+    "/css/app.css": "/css/app.css",
+    "/js/main.js": "/js/main.js",
+    "/js/fullcalendar/fullcalendar.js": "/js/fullcalendar/fullcalendar.js",
+    "/js/fullcalendar/moment.min.js": "/js/fullcalendar/moment.min.js",
+    "/js/fullcalendar/gcal.js": "/js/fullcalendar/gcal.js",
+    "/js/fullcalendar/locale-all.js": "/js/fullcalendar/locale-all.js",
+    "/css/style.css": "/css/style.css",
+    "/css/fullcalendar.css": "/css/fullcalendar.css",
+    "/css/fullcalendar.print.css": "/css/fullcalendar.print.css"
+}
