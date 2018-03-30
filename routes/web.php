@@ -19,5 +19,6 @@ Route::get('/', function () {
 Route::get('/widget', 'WidgetController@index');
 Route::get('/branch', 'WidgetController@getBranch');
 Route::get('/specialties', 'WidgetController@getSpecialties');
-Route::get('/datatime', 'WidgetController@getDataTime');
+Route::get('/datatm', 'WidgetController@getDataTime');
 Route::get('/worker', 'WidgetController@getWorker');
+Route::post('/client', 'WidgetController@addClint');

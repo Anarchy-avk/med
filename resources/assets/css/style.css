@@ -44,9 +44,11 @@ select {display: block;width: 100%;padding: 10px;color: #74646e;border: 1px soli
   #calendar button:focus {background-color: transparent;}
   #calendar .fc-view-container{padding: 0 10px;}
   #calendar .fc-toolbar.fc-header-toolbar{margin-bottom: 0; position: absolute; width: 100%;    left: 0;}
-  #calendar .fc-toolbar .fc-left{width: 100%;}
-  #calendar .fc-toolbar .fc-left button{background: transparent;height: auto;margin: 0;padding: 0;border: 0;box-shadow: none;    top: 4px;}
-  #calendar .fc-toolbar .fc-left .fc-corner-right{position: absolute;right: 0;}
+  #calendar .fc-toolbar .fc-left{width: 100%; } 
+  #calendar .fc-toolbar .fc-left button{background: transparent;height: auto;margin: 0;padding: 0;border: 0;box-shadow: none;    top: 4px;width: 20px; height: 20px; display: block;}
+  #calendar .fc-toolbar .fc-left .fc-prev-button {left: -10px;}
+  #calendar .fc-toolbar .fc-left .fc-next-button{}
+  #calendar .fc-toolbar .fc-left .fc-corner-right{position: absolute;right: -8px;}
   #dateTimeText b{text-align: center;display: block;width: 100%;}
   
   .title-header{display: block; cursor: pointer; -webkit-tap-highlight-color: transparent; line-height: 1.5; padding: 1rem; background-color: #fff;}

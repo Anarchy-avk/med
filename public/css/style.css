@@ -36,7 +36,6 @@ select {display: block;width: 100%;padding: 10px;color: #74646e;border: 1px soli
   .box-calendar h3{font-size: 20px!important; text-align: center; line-height: 1!important; margin: 10px 0 5px 0!important; color: #2ab7a9;}
  
   #calendar {width: 100%;}
-  #calendar .fc-button-group{position: relative; display: block;    width: 100%;}
   #calendar .fc-right{display: none;}
   #calendar .fc-event-container{text-align: center;padding: 2px 2px;}
   #calendar .fc-day-grid-event{display: inline-block; background: #cbf5ff; color: #448ccb; margin: 0 auto; padding: 8px 0;width: 100%; border-radius: 0; border: 0;cursor: pointer;}

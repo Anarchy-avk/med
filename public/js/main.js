@@ -112,23 +112,25 @@ $(document).ready(function () {
             columnHeaderFormat: 'D ddd',
             defaultView: 'basicWeek',
             //    contentHeight: 400,
-
             // navLinks: true, // can click day/week names to navigate views
             // editable: true,
             locale: 'ru',
             viewRender: function viewRender(view, element) {
 
-                console.log(view.intervalStart.format());
-                console.log(view.intervalEnd.format());
+                //  console.log(view.intervalStart.format());
+                //   console.log(view.intervalEnd.format());
                 speciality = document.getElementById('speciality').value;
-                getDataTime(speciality, view.intervalStart.format(), view.intervalEnd.format());
+                branch = document.getElementById('med_obeject').value;
+                if (speciality.length > 0 && branch.length > 0) {
+                    getDataTime(speciality, view.intervalStart.format(), view.intervalEnd.format(), branch);
+                }
             },
             eventClick: function eventClick(calEvent, jsEvent, view) {
 
                 worker = $('#worker option:selected').val();
                 med_obeject = $('#med_obeject option:selected').val();
-                console.log("----------");
-                console.log(calEvent);console.log(jsEvent);console.log(view);
+                // console.log("----------");
+                // console.log(calEvent);console.log(jsEvent);console.log(view);
                 if (med_obeject.length != 0) {
 
                     $('.step1').hide();
@@ -136,38 +138,13 @@ $(document).ready(function () {
                     $('.step2 .spec').text($('#speciality option:selected').text());
                     $('.step2 .date-time').text(calEvent.start._i);
                     $('.step2').show();
-                    // $('.block-pacient').show();
+
                     $('input[name=timetableId]').val(calEvent.id);
-                    document.getElementById('dob').value = calEvent.start._i;
-                    document.getElementById('specialityText').innerHTML = $('#speciality option:selected').text();
-                    //  checkdatetime(calEvent.id, calEvent.start._i);
-                    /*  $.get("gettime.php?token=" + document.getElementById('token').value + "&worker=" + worker + "&date=" + calEvent.start._i, function (data, status) {
-                        var obj = $.parseJSON(data);
-                        for (var i = 0; i < obj.length; i++) {
-                            var timestamp = new Date(obj[i].start_time['date']);
-                            var hours = timestamp.getHours();
-                            var minutes = timestamp.getMinutes();
-                            if (minutes == 0) {
-                                minutes = '00';
-                            }
-                            var r = $('<input type="button" class="btn" style="width: 70px; margin: 2px; padding: 2px;" onclick="checkdatetime(' + obj[i].id + ')"  value="' + hours + ':' + minutes + '" id="' + obj[i].id + '"/>');
-                            $("#time").append(r);
-                                                          }
-                        if (obj.length == 0) {
-                            r = $('<p> По вашему запросу данных не найдено.</p>');
-                            $("#time").append(r);
-                        }
-                       
-                    }); */
+                    // document.getElementById('dob').value=calEvent.start._i;
+                    //  document.getElementById('specialityText').innerHTML=$('#speciality option:selected').text();
                 } else {
                     alert("Выберите мед. центр!");
                 }
-                //alert('Event: ' + calEvent.id);
-                /*  alert('Event: ' + calEvent.title);
-                 alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
-                 alert('View: ' + view.name);*/
-                // change the border color just for fun
-                //$(this).css('border-color', 'red');
             }
 
         });
@@ -179,24 +156,42 @@ $(document).ready(function () {
             return new Date(d.setDate(diff));
         }
 
-        $("#speciality").change(function () {
-            //$('.block-pacient').hide();
-            speciality = document.getElementById('speciality').value;
-            var date = new Date();
+        function StartDate(date) {
             var d = date.getDate();
             var m = date.getMonth();
             var y = new Date(date.getFullYear());
-            start = getMonday(date);console.log(date);
+            start = getMonday(date);
             end = new Date(date.setDate(start.getDate() + 6));
+            mm = start.getMonth() + 1;
+            return start.getFullYear() + "-" + ('0' + mm).slice(-2) + "-" + ('0' + start.getDate()).slice(-2);
+        }
+        function EndDate(date) {
+            var d = date.getDate();
+            var m = date.getMonth();
+            var y = new Date(date.getFullYear());
+            start = getMonday(date);
+            end = new Date(date.setDate(start.getDate() + 6));
+            mm = start.getMonth() + 1;
+            console.log(mm);
+            return end.getFullYear() + "-" + ('0' + (mm + 1)).slice(-2) + "-" + ('0' + end.getDate()).slice(-2);
+        }
 
-            mm_start = start.getMonth() + 1;
-            mm_end = end.getMonth() + 1;
-
-            getDataTime(speciality, start.getFullYear() + "-" + mm_start + "-" + start.getDate(), end.getFullYear() + "-" + mm_end + "-" + end.getDate());
+        $("#speciality").change(function () {
+            speciality = document.getElementById('speciality').value;
+            branch = document.getElementById('med_obeject').value;
+            if (branch.length > 0) {
+                var date = new Date();
+                mm_start = StartDate(date);
+                mm_end = EndDate(date);
+                console.log(mm_start);console.log(mm_end);
+                getDataTime(speciality, mm_start, mm_end, branch);
+            } else {
+                alert('Выберите филиал...');
+            }
         });
 
-        function getDataTime(speciality, start, end) {
-            $.get("datatime?speciality=" + speciality + "&start=" + start + "&end=" + end, function (data, status) {
+        function getDataTime(speciality, start, end, branch) {
+            $.get("datatm?speciality=" + speciality + "&start=" + start + "&end=" + end + '&branches=' + branch, function (data, status) {
                 obj = $.parseJSON(data);
 
                 var obj = $.parseJSON(data);
@@ -209,7 +204,7 @@ $(document).ready(function () {
                 opt.innerHTML = "-- Выберите из списка  --";
                 select.appendChild(opt);
 
-                $.get("worker?speciality=" + speciality, function (data, status) {
+                $.get("worker?speciality=" + speciality + '&branches=' + branch, function (data, status) {
                     obj = $.parseJSON(data);
                     document.getElementById('worker').style.display = 'block';
 
@@ -225,13 +220,98 @@ $(document).ready(function () {
 
         $("#worker").change(function () {
             worker = document.getElementById('worker').value;
-            $.get("/datatime?speciality=" + speciality + "&worker=" + worker, function (data, status) {
+            speciality = document.getElementById('speciality').value;
+
+            moment = calendar.fullCalendar('getDate');
+            var date = new Date(moment._d);
+            mm_start = StartDate(date);
+            mm_end = EndDate(date);
+            console.log(mm_start);console.log(mm_end);
+            //console.log(moment._d);
+
+            $.get("/datatm?speciality=" + speciality + "&worker=" + worker + "&start=" + mm_start + "&end=" + mm_end, function (data, status) {
                 obj = $.parseJSON(data);
                 var obj = $.parseJSON(data);
                 calendar.fullCalendar('removeEvents');
                 calendar.fullCalendar('addEventSource', obj);
             });
         });
+    });
+    function validateEmail(email) {
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+    $('#send_form').bind('click', function (e) {
+
+        var surname = $('#surname').val();
+        var name = $('#name').val();
+        var patronymic = $('#patronymic').val();
+        var email = $('#email').val();
+        var phone = $('#phone').val();
+        var token = $('#token').val();
+        var timetableId = $('#timetableId').val();
+        $chek = true;
+        if (surname.length == 0) {
+            $('#surname').css({ 'border': '1px solid red' });
+            $chek = false;
+        } else {
+            $('#surname').css({ 'border': '1px solid #ccd0d2' });
+        }
+
+        if (name.length == 0) {
+            $('#name').css({ 'border': '1px solid red' });
+            $chek = false;
+        } else {
+            $('#name').css({ 'border': '1px solid #ccd0d2' });
+        }
+
+        if (patronymic.length == 0) {
+            $('#patronymic').css({ 'border': '1px solid red' });
+            $chek = false;
+        } else {
+            $('#patronymic').css({ 'border': '1px solid #ccd0d2' });
+        }
+
+        if (!validateEmail(email)) {
+            $('#email').css({ 'border': '1px solid red' });
+            $chek = false;
+        } else {
+            $('#email').css({ 'border': '1px solid #ccd0d2' });
+        }
+
+        if (phone.length == 0) {
+            $('#phone').css({ 'border': '1px solid red' });
+            $chek = false;
+        } else {
+            $('#phone').css({ 'border': '1px solid #ccd0d2' });
+        }
+
+        /*$.ajaxSetup({
+            header:$('meta[name="_token"]').attr('content')
+        })*/
+        $.ajaxSetup({
+            headers: {
+                'X-XSRF-Token': $('meta[name="_token"]').attr('content')
+            }
+        });
+
+        if ($chek) {
+            $.ajax({
+                type: "POST",
+                url: '/client',
+                data: "surname=" + surname + '&name=' + name + '&patronymic=' + patronymic + '&email=' + email + '&phone=' + phone + '&_token=' + token + '&timetableId=' + timetableId,
+                dataType: 'json',
+                success: function success(data) {
+                    console.log(data);
+                    alert('Error');
+                },
+                error: function error(data) {}
+            });
+        } else {
+            alert('Проверте форму');
+        }
+        return false;
+        //  });
     });
 });
 
