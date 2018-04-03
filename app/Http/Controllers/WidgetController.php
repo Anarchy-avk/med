@@ -5,6 +5,9 @@ use Config;
 use Timetable;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Timetable\Api\Error\ResponseContainsErrors;
+use Illuminate\Support\Facades\Log;
+use Timetable\Api\Type\Order;
 
 class WidgetController extends Controller
 {
@@ -40,46 +43,47 @@ class WidgetController extends Controller
     
     public function getDataTime(Request $request){
   
-       $input = $request->all();
-       $speciality[0] = (int)$request->input('speciality');
-       $worker[0] = (int)$request->input('worker');
-       $branches[0]=(int)$request->input('branches');
-       $start=$request->input('start');
-       $end=$request->input('end');
-       $newformatMin =  Carbon::createFromFormat('Y-m-d', $start);//date('Y-m-d', strtotime($_GET['start']));//date("d.m.Y", strtotime("last Monday")) 
-       $newformatMax =  Carbon::createFromFormat('Y-m-d', $end);//date('Y-m-d', strtotime($_GET['end']));//date("d.m.Y", strtotime("Sunday"));  
+        $input = $request->all();
+        $speciality[0] = (int)$request->input('speciality');
+        $worker[0] = (int)$request->input('worker');
+        $branches[0]=(int)$request->input('branches');
+        $start=$request->input('start');
+        $end=$request->input('end');
+        $newformatMin =  Carbon::createFromFormat('Y-m-d', $start);//date('Y-m-d', strtotime($_GET['start']));//date("d.m.Y", strtotime("last Monday")) 
+        $newformatMax =  Carbon::createFromFormat('Y-m-d', $end);//date('Y-m-d', strtotime($_GET['end']));//date("d.m.Y", strtotime("Sunday"));  
  
-     if(empty($worker)){ 
-
-        $query1 = (new Timetable\Api\Query\TimetablesQuery())
-           // ->dateMin(Carbon::createFromFormat('Y-m-d', '2018-03-22'))
-           // ->dateMax(Carbon::createFromFormat('Y-m-d', '2018-03-23'))
-            ->dateMin($newformatMin)
-            ->dateMax($newformatMax)
-            ->specialties($speciality)
-            ->branches($branches)
-            ->wantFields('id', 'start_time')
-            ->wantFields(['room' => ['number', 'floor', 'name']])
-            ->wantFields(['worker' => ['surname', 'name', 'patronymic']]);
-    
-      }else{
-
-        $query1 = (new Timetable\Api\Query\TimetablesQuery())
-            //->dateMin(Carbon::createFromFormat('Y-m-d', '2018-03-22'))
-            //->dateMax(Carbon::createFromFormat('Y-m-d', '2018-03-23'))
-            ->dateMin($newformatMin)
-            ->dateMax($newformatMax)
-            ->workers([2018])//$worker
-            ->branches($branches)
-            ->wantFields('id', 'start_time')
-            ->wantFields(['room' => ['number', 'floor', 'name']])
-            ->wantFields(['worker' => ['surname', 'name', 'patronymic']]);
-      }      
-    $timetables = $this->client->query($query1);
-    $Calendar=array();
-    //print_r($timetables);
-    
-    foreach($timetables as $val){
+        if ($worker[0] === 0) {
+            $query1 = (new Timetable\Api\Query\TimetablesQuery())
+                    ->dateMin(Carbon::createFromFormat('Y-m-d', '2018-04-03'))
+                    ->dateMax(Carbon::createFromFormat('Y-m-d', '2018-04-10'))
+//                    ->dateMin($newformatMin)
+//                    ->dateMax($newformatMax)
+                    ->specialties($speciality)
+                    ->branches($branches);
+                    //->wantFields('id', 'start_time')
+                    //->wantFields(['room' => ['number', 'floor', 'name']])
+                    //->wantFields(['worker' => ['surname', 'name', 'patronymic']]);
+        } else {
+            $query1 = (new Timetable\Api\Query\TimetablesQuery())
+//                    ->dateMin(Carbon::createFromFormat('Y-m-d', '2018-03-22'))
+//                    ->dateMax(Carbon::createFromFormat('Y-m-d', '2018-03-23'))
+                    ->dateMin($newformatMin)
+                    ->dateMax($newformatMax)
+                    ->workers($worker)//$worker
+                    ->branches($branches);
+                    //->wantFields('id', 'start_time');
+                    //->wantFields(['room' => ['number', 'floor', 'name']])
+                    //->wantFields(['worker' => ['surname', 'name', 'patronymic']]);
+      }
+      try {
+          $timetables = $this->client->query($query1);
+      } catch (ResponseContainsErrors $e) {
+          Log::warning(print_r($e->getErrors(), true));
+          return;
+      }
+      $Calendar=array();
+//      print_r($timetables);
+      foreach($timetables as $val){
         $start=(array)$val->start_time;
         $end=(array)$val->end_time;
         $Calendar[]=array(
@@ -125,20 +129,26 @@ class WidgetController extends Controller
         ->customer((new Timetable\Api\Type\Input\OrderCustomerInput())
             ->surname($input['surname']) 
             ->name($input['name'])
-            ->email($input['email'])
             ->patronymic($input['patronymic'])
-            ->phone($input['phone'])
+            ->email($input['email'])
+            ->phone('+' . $input['phone'])
             ->birthDate(Carbon::today()->subYears(18))
             ->sex('male')
         );
       
-        $timetables = $this->client->mutation($mutation);
-             $myJSON = json_encode($timetables);
-        echo $myJSON;
+        try {
+            /* @var $order Order */
+            $order = $this->client->mutation($mutation);
+        } catch (ResponseContainsErrors $e) {
+            Log::warning(print_r($e->getErrors(), true));
+            return;
+        }
+        echo $order->id;
+        //$myJSON = json_encode($timetables);
+        //echo $myJSON;
         //Object of class Timetable\\Api\\Type\\Order could not be converted to string
         //echo $timetables;
     }
- 
 }
 
 
